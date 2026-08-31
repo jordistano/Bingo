@@ -1,0 +1,556 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>🎱 Bingo Amigos</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🎱</text></svg>">
+<style>
+:root{
+  --bg:#f2effa; --card:#fff; --ink:#211d33; --muted:#6f6a87; --line:#e4e0f1;
+  --primary:#5a4bd1; --primary-d:#4436ad; --amber:#f59e0b; --green:#159a4c; --red:#d9283f;
+  --radius:14px; --shadow:0 3px 12px rgba(33,29,51,.08);
+}
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{margin:0;font-family:system-ui,-apple-system,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;background:var(--bg);color:var(--ink);line-height:1.45}
+header{background:linear-gradient(120deg,#4a3fbf,#7a3cf0);color:#fff;padding:16px 20px;display:flex;justify-content:space-between;align-items:center;gap:12px}
+.brand{display:flex;align-items:center;gap:12px}
+.logo-ball{width:48px;height:48px;border-radius:50%;background:radial-gradient(circle at 32% 28%,#fff,#dfe0f5 45%,#b9bcd8);display:flex;align-items:center;justify-content:center;font-size:26px;box-shadow:inset 0 -4px 8px rgba(0,0,0,.18),0 2px 6px rgba(0,0,0,.25)}
+h1{margin:0;font-size:21px;letter-spacing:.2px}
+.brand p{margin:2px 0 0;font-size:12.5px;opacity:.85}
+.hdr-actions{display:flex;gap:8px}
+button{font:inherit;cursor:pointer;border:none;border-radius:10px;padding:9px 14px;background:#ece7fb;color:#4635a8;font-weight:600;transition:transform .12s,filter .12s,background .12s}
+button:hover{filter:brightness(.97)}
+button:active{transform:translateY(1px)}
+button.primary{background:var(--primary);color:#fff}
+button.primary:hover{background:var(--primary-d)}
+button.danger{background:#fde3e7;color:var(--red)}
+button.ghost{background:transparent;color:var(--muted);border:1px solid var(--line)}
+button.light{background:rgba(255,255,255,.18);color:#fff;border:1px solid rgba(255,255,255,.3)}
+button.small{padding:5px 9px;border-radius:8px;font-size:13px}
+nav{display:flex;gap:4px;padding:14px 18px 0;max-width:980px;margin:0 auto;overflow-x:auto}
+.tab-btn{background:transparent;color:var(--muted);border-radius:10px 10px 0 0;padding:10px 16px;white-space:nowrap}
+.tab-btn.active{background:var(--card);color:var(--primary);box-shadow:0 -3px 10px rgba(33,29,51,.05)}
+main{max-width:980px;margin:0 auto;padding:14px 18px 70px}
+.tab{display:none}
+.tab.active{display:block}
+.card{background:var(--card);border-radius:var(--radius);box-shadow:var(--shadow);padding:16px 18px;margin-bottom:14px}
+.toolbar{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-bottom:12px;flex-wrap:wrap}
+.tool-note{font-size:13px;color:var(--muted)}
+.muted{color:var(--muted)}
+.empty{background:var(--card);border-radius:var(--radius);box-shadow:var(--shadow);padding:26px 18px;text-align:center;color:var(--muted)}
+.hidden{display:none !important}
+h3{margin:0 0 12px;font-size:16px}
+h4{margin:14px 0 6px;font-size:13.5px;text-transform:uppercase;letter-spacing:.4px;color:var(--muted)}
+
+/* formulario de jugada */
+.jug-rows{margin:12px 0;display:flex;flex-direction:column;gap:8px}
+.jug-row{display:flex;align-items:center;gap:10px;flex-wrap:wrap;border:1px solid var(--line);border-radius:10px;padding:8px 10px;background:#fbfaff}
+.jug-row.dimmed{opacity:.55}
+.jug-row .pname{font-weight:600;min-width:110px;flex:1}
+.jug-row input[type=number]{width:64px;padding:6px 8px;border:1px solid var(--line);border-radius:8px;font:inherit;background:#fff}
+.chk{display:inline-flex;align-items:center;gap:6px;font-size:14px;cursor:pointer;user-select:none}
+.win-chk{display:inline-flex;align-items:center;gap:5px;font-size:13px;cursor:pointer;user-select:none;border:1px solid var(--line);border-radius:8px;padding:5px 8px;background:#fff}
+.win-chk.line{color:#8a5a00}
+.win-chk.bingo{color:var(--primary-d)}
+.win-chk:has(input:checked){background:#fff7e0;border-color:var(--amber)}
+.win-chk.bingo:has(input:checked){background:#ece7fb;border-color:var(--primary)}
+.f-actions{display:flex;gap:8px;margin-top:14px;justify-content:flex-end}
+.f-note{font-size:13px;color:var(--muted);background:#f6f3ff;border:1px dashed #cfc6f2;border-radius:10px;padding:8px 12px}
+
+/* historial */
+.jugada .jug-head{display:flex;justify-content:space-between;align-items:center;gap:8px}
+.badge{background:#ece7fb;color:#4635a8;border-radius:20px;padding:3px 10px;font-size:12px;font-weight:700}
+.jug-body p{margin:8px 0 0}
+.prize-line{display:flex;gap:10px;flex-wrap:wrap;margin-top:8px}
+.prize{display:inline-flex;align-items:center;gap:6px;border-radius:10px;padding:5px 10px;font-size:13px}
+.prize.line{background:#fff7e0;color:#7a5200}
+.prize.bingo{background:#ece7fb;color:#4635a8}
+
+/* jugadores */
+.add-player{display:flex;gap:8px}
+.add-player input{flex:1;padding:9px 12px;border:1px solid var(--line);border-radius:10px;font:inherit;background:#fff}
+ul.players{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:6px}
+ul.players li{display:flex;align-items:center;gap:10px;padding:9px 12px;border:1px solid var(--line);border-radius:10px}
+.pname{font-weight:600;flex:1}
+.bal{font-weight:700;font-size:13px}
+.bal.pos{color:var(--green)} .bal.neg{color:var(--red)}
+
+/* tabla resumen */
+table{width:100%;border-collapse:collapse}
+th,td{text-align:left;padding:9px 10px;border-bottom:1px solid var(--line);font-size:14px}
+th{color:var(--muted);font-size:12px;text-transform:uppercase;letter-spacing:.4px}
+td.num,th.num{text-align:right;font-variant-numeric:tabular-nums}
+tr.total td{font-weight:700;border-top:2px solid var(--line);border-bottom:none}
+.pos{color:var(--green)} .neg{color:var(--red)}
+
+/* pagos */
+ul.transfers{list-style:none;margin:10px 0;padding:0;display:flex;flex-direction:column;gap:8px}
+ul.transfers li{display:flex;align-items:center;gap:10px;background:#fbfaff;border:1px solid var(--line);border-radius:10px;padding:10px 12px;font-size:15px}
+ul.transfers .arrow{color:var(--muted)}
+ul.transfers b{margin-left:auto;color:var(--primary-d);font-size:16px}
+ul.balances{list-style:none;margin:6px 0;padding:0;display:flex;flex-direction:column;gap:4px;font-size:14px}
+.ok{color:var(--green);font-weight:600}
+
+/* modal */
+.modal-overlay{position:fixed;inset:0;background:rgba(33,29,51,.45);display:flex;align-items:center;justify-content:center;padding:16px;z-index:50}
+.modal{background:#fff;border-radius:16px;padding:20px;width:100%;max-width:380px;box-shadow:0 20px 50px rgba(0,0,0,.25);display:flex;flex-direction:column;gap:12px}
+.modal label{display:flex;flex-direction:column;gap:5px;font-size:13.5px;font-weight:600}
+.modal input{padding:9px 11px;border:1px solid var(--line);border-radius:10px;font:inherit;background:#fff}
+.modal small{font-weight:400;color:var(--muted)}
+.modal-actions{display:flex;align-items:center;gap:8px;margin-top:6px;flex-wrap:wrap}
+.spacer{flex:1}
+footer{max-width:980px;margin:0 auto;padding:0 18px 30px;color:var(--muted);font-size:13px;text-align:center}
+
+@media (max-width:640px){
+  .jug-row{gap:8px}
+  .jug-row .pname{min-width:0;flex:1 1 100%}
+}
+@media print{
+  body{background:#fff}
+  .no-print,nav,.toolbar,footer{display:none !important}
+  header{padding:8px 0;background:#fff;color:#000}
+  .hdr-actions{display:none !important}
+  .card{box-shadow:none;border:1px solid #ddd}
+}
+</style>
+</head>
+<body data-tab="jugadas">
+<header>
+  <div class="brand">
+    <div class="logo-ball">🎱</div>
+    <div>
+      <h1>Bingo Amigos</h1>
+      <p>Cartones, líneas, bingos y pagos entre amigos</p>
+    </div>
+  </div>
+  <div class="hdr-actions no-print">
+    <button id="btn-settings" class="light">⚙️ Configuración</button>
+  </div>
+</header>
+
+<nav class="no-print">
+  <button class="tab-btn active" data-tab="jugadas">🎲 Jugadas</button>
+  <button class="tab-btn" data-tab="jugadores">👥 Jugadores</button>
+  <button class="tab-btn" data-tab="resumen">📊 Resumen</button>
+  <button class="tab-btn" data-tab="pagos">💸 Pagos</button>
+</nav>
+
+<main>
+  <section id="tab-jugadas" class="tab active">
+    <div class="toolbar no-print">
+      <div class="tool-note" id="price-note"></div>
+      <button id="btn-new-jugada" class="primary">+ Nueva jugada</button>
+    </div>
+    <div id="jugada-form" class="card hidden"></div>
+    <div id="jugadas-empty" class="empty hidden"></div>
+    <div id="jugadas-list"></div>
+  </section>
+
+  <section id="tab-jugadores" class="tab">
+    <div class="card">
+      <div class="add-player no-print">
+        <input id="player-name" type="text" maxlength="30" placeholder="Nombre del jugador" autocomplete="off">
+        <button id="btn-add-player" class="primary">Agregar</button>
+      </div>
+    </div>
+    <div id="players-list"></div>
+  </section>
+
+  <section id="tab-resumen" class="tab">
+    <div id="resumen-table"></div>
+  </section>
+
+  <section id="tab-pagos" class="tab">
+    <div id="pagos-content"></div>
+    <div class="toolbar no-print" id="print-bar">
+      <button id="btn-print">🖨️ Imprimir resumen</button>
+    </div>
+  </section>
+</main>
+
+<footer class="no-print">💡 Al terminar la sesión, hacé las transferencias indicadas <b>una sola vez</b> para liquidar todo. Los datos se guardan automáticamente en este navegador.</footer>
+
+<div id="modal" class="modal-overlay hidden no-print">
+  <div class="modal">
+    <h3>⚙️ Configuración de la sesión</h3>
+    <label>Moneda <input id="set-currency" maxlength="4" placeholder="$"></label>
+    <label>Precio del cartón (fijo) <input id="set-price" type="number" min="0" step="0.01"></label>
+    <label>% del pozo para la Línea <input id="set-linepct" type="number" min="0" max="100" step="1">
+      <small>El Bingo recibe el resto. Ej: 25 → Línea 25%, Bingo 75%.</small></label>
+    <div class="modal-actions">
+      <button id="btn-reset" class="danger">🗑 Borrar todo</button>
+      <span class="spacer"></span>
+      <button id="btn-modal-close" class="ghost">Cerrar</button>
+      <button id="btn-save-settings" class="primary">Guardar</button>
+    </div>
+  </div>
+</div>
+
+<script>
+'use strict';
+const STORAGE_KEY = 'bingoAmigos_v1';
+let state = loadState() || defaultState();
+let formState = { open:false, editingId:null };
+
+function defaultState(){
+  return { currency:'$', priceCents:1000, linePct:25, players:[], jugadas:[] };
+}
+function uid(){
+  return (window.crypto && crypto.randomUUID) ? crypto.randomUUID()
+    : 'id-'+Date.now()+'-'+Math.random().toString(36).slice(2,8);
+}
+function esc(s){
+  return String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+}
+function loadState(){
+  try{
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if(!raw) return null;
+    const s = JSON.parse(raw);
+    if(!s || !Array.isArray(s.players) || !Array.isArray(s.jugadas)) return null;
+    s.currency = typeof s.currency==='string' && s.currency ? s.currency : '$';
+    s.priceCents = Number.isFinite(s.priceCents) ? s.priceCents : 1000;
+    s.linePct = Number.isFinite(s.linePct) ? s.linePct : 25;
+    return s;
+  }catch(e){ return null; }
+}
+function saveState(){
+  try{ localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); }catch(e){}
+}
+function toCents(v){
+  const n = Math.round((parseFloat(v)||0)*100);
+  return Number.isFinite(n) ? n : 0;
+}
+function fmt(c){
+  c = Math.round(c)||0;
+  const sign = c<0 ? '-' : '';
+  return sign + state.currency + (Math.abs(c)/100).toFixed(2);
+}
+function pname(id){
+  const p = state.players.find(p=>p.id===id);
+  return p ? p.name : '(desconocido)';
+}
+function cartsWord(n){ return n===1 ? 'cartón' : 'cartones'; }
+
+/* ---- cálculo de premios ---- */
+function jugadaPot(j){
+  let carts=0;
+  for(const id in j.buys) carts += j.buys[id];
+  return carts * j.priceCents;
+}
+function splitPrize(cents, ids){
+  if(!ids || !ids.length) return [];
+  const n = ids.length;
+  const base = Math.floor(cents/n);
+  const rem = cents % n;
+  return ids.map((id,i)=>({ id, cents: i===n-1 ? base+rem : base }));
+}
+function jugadaPrizes(j){
+  const pot = jugadaPot(j);
+  const lineIds = j.line || [];
+  const linePct = (j.linePct != null) ? j.linePct : state.linePct;
+  const lineCents = lineIds.length ? Math.round(pot * linePct / 100) : 0;
+  const bingoCents = pot - lineCents;
+  return { line: splitPrize(lineCents, lineIds), bingo: splitPrize(bingoCents, j.bingo||[]) };
+}
+function playerTotals(){
+  const t = {};
+  for(const p of state.players) t[p.id] = { cartones:0, gastado:0, ganado:0, line:0, bingo:0 };
+  for(const j of state.jugadas){
+    for(const id in j.buys){
+      const x = t[id]; if(!x) continue;
+      x.cartones += j.buys[id];
+      x.gastado += j.buys[id] * j.priceCents;
+    }
+    const pr = jugadaPrizes(j);
+    for(const s of pr.line){ const x=t[s.id]; if(x){ x.ganado+=s.cents; x.line+=s.cents; } }
+    for(const s of pr.bingo){ const x=t[s.id]; if(x){ x.ganado+=s.cents; x.bingo+=s.cents; } }
+  }
+  for(const id in t) t[id].balance = t[id].ganado - t[id].gastado;
+  return t;
+}
+function settle(){
+  const t = playerTotals();
+  const debtors=[], creditors=[];
+  for(const p of state.players){
+    const b = t[p.id].balance;
+    if(b<0) debtors.push({id:p.id, cents:-b});
+    else if(b>0) creditors.push({id:p.id, cents:b});
+  }
+  debtors.sort((a,b)=>b.cents-a.cents);
+  creditors.sort((a,b)=>b.cents-a.cents);
+  const transfers=[];
+  while(debtors.length && creditors.length){
+    const d=debtors[0], c=creditors[0];
+    const amt=Math.min(d.cents,c.cents);
+    transfers.push({from:d.id, to:c.id, cents:amt});
+    d.cents-=amt; c.cents-=amt;
+    if(d.cents===0) debtors.shift();
+    if(c.cents===0) creditors.shift();
+  }
+  return transfers;
+}
+
+/* ---- render ---- */
+function renderAll(){
+  renderPriceNote();
+  renderJugadas();
+  renderPlayers();
+  renderResumen();
+  renderPagos();
+}
+function renderPriceNote(){
+  document.getElementById('price-note').innerHTML =
+    `Precio del cartón: <b>${fmt(state.priceCents)}</b> · Línea: <b>${state.linePct}%</b> del pozo (el Bingo recibe el resto)`;
+}
+
+function renderJugadas(){
+  const form = document.getElementById('jugada-form');
+  if(!formState.open){
+    form.classList.add('hidden');
+    form.innerHTML='';
+  }else{
+    form.classList.remove('hidden');
+    const editing = formState.editingId != null;
+    const j = editing ? state.jugadas.find(x=>x.id===formState.editingId) : null;
+    const buys = j ? j.buys : {};
+    const lineW = j ? (j.line||[]) : [];
+    const bingoW = j ? (j.bingo||[]) : [];
+    const notePrice = editing ? j.priceCents : state.priceCents;
+    const notePct = editing && j.linePct != null ? j.linePct : state.linePct;
+    let rows = '';
+    if(!state.players.length){
+      rows = `<p class="muted">Primero agregá jugadores en la pestaña <b>Jugadores</b>.</p>`;
+    }else{
+      rows = state.players.map(p=>{
+        const part = j ? (p.id in buys) : true;
+        const carts = j ? (buys[p.id]||0) : 1;
+        const isLine = lineW.includes(p.id);
+        const isBingo = bingoW.includes(p.id);
+        return `<div class="jug-row${part?'':' dimmed'}" data-pid="${p.id}">
+          <label class="chk"><input type="checkbox" class="p-part" ${part?'checked':''}> <span class="pname">${esc(p.name)}</span></label>
+          <label class="chk">Cartones <input type="number" class="p-carts" min="0" step="1" value="${carts}" ${part?'':'disabled'}></label>
+          <label class="win-chk line"><input type="checkbox" class="p-line" ${isLine?'checked':''}> 📏 Línea</label>
+          <label class="win-chk bingo"><input type="checkbox" class="p-bingo" ${isBingo?'checked':''}> 🏆 Bingo</label>
+        </div>`;
+      }).join('');
+    }
+    form.innerHTML = `
+      <h3>${editing ? '✏️ Editar jugada' : '🎲 Nueva jugada'}</h3>
+      <p class="f-note">Precio del cartón: <b>${fmt(notePrice)}</b> (fijo de la sesión) — Línea: <b>${notePct}%</b> del pozo, el Bingo recibe el resto.</p>
+      <div class="jug-rows">${rows}</div>
+      <div class="f-actions no-print">
+        <button id="f-save" class="primary">${editing?'💾 Guardar cambios':'💾 Registrar jugada'}</button>
+        <button id="f-cancel" class="ghost">Cancelar</button>
+      </div>`;
+    form.querySelector('#f-save').addEventListener('click', saveJugada);
+    form.querySelector('#f-cancel').addEventListener('click', ()=>{ formState={open:false,editingId:null}; renderJugadas(); });
+    form.querySelectorAll('.p-part').forEach(ch=>ch.addEventListener('change', ()=>{
+      const row=ch.closest('.jug-row');
+      const carts=row.querySelector('.p-carts');
+      carts.disabled=!ch.checked;
+      row.classList.toggle('dimmed', !ch.checked);
+    }));
+  }
+
+  const list=document.getElementById('jugadas-list');
+  const empty=document.getElementById('jugadas-empty');
+  if(!state.jugadas.length){
+    list.innerHTML='';
+    empty.classList.remove('hidden');
+    empty.innerHTML = state.players.length
+      ? `Todavía no hay jugadas. Tocá <b>+ Nueva jugada</b> para registrar la primera. 🎲`
+      : `Todavía no hay jugadas. Agregá jugadores en la pestaña <b>Jugadores</b> y después registrá la primera jugada. 🎲`;
+  }else{
+    empty.classList.add('hidden');
+    list.innerHTML = state.jugadas.map((j,i)=>{
+      const n = state.jugadas.length-i;
+      const pot = jugadaPot(j);
+      const pr = jugadaPrizes(j);
+      const parts = Object.entries(j.buys).map(([id,c])=>`${esc(pname(id))} (${c} ${cartsWord(c)})`).join(', ');
+      const when = new Date(j.createdAt).toLocaleString('es',{day:'2-digit',month:'short',hour:'2-digit',minute:'2-digit'});
+      const prizeHtml = (title, arr, cls)=>{
+        if(!arr.length) return `<span class="prize ${cls}">${title}: —</span>`;
+        const t = arr.map(s=>`${esc(pname(s.id))}${arr.length>1?' ('+fmt(s.cents)+')':''}`).join(', ');
+        return `<span class="prize ${cls}">${title}: ${t}</span>`;
+      };
+      return `<div class="card jugada">
+        <div class="jug-head">
+          <div><span class="badge">Jugada #${n}</span> <span class="muted">${when}</span></div>
+          <div class="no-print">
+            <button class="ghost small" data-edit="${j.id}">✏️</button>
+            <button class="danger small" data-del="${j.id}">🗑</button>
+          </div>
+        </div>
+        <div class="jug-body">
+          <p><b>Pozo:</b> ${fmt(pot)} <span class="muted">(${fmt(j.priceCents)} × cartón) · ${parts}</span></p>
+          <div class="prize-line">
+            ${prizeHtml('🏆 Bingo', pr.bingo, 'bingo')}
+            ${prizeHtml('📏 Línea', pr.line, 'line')}
+          </div>
+        </div>
+      </div>`;
+    }).join('');
+    list.querySelectorAll('[data-edit]').forEach(b=>b.addEventListener('click',()=>{
+      formState={open:true,editingId:b.dataset.edit}; renderJugadas(); window.scrollTo({top:0,behavior:'smooth'});
+    }));
+    list.querySelectorAll('[data-del]').forEach(b=>b.addEventListener('click',()=>deleteJugada(b.dataset.del)));
+  }
+}
+
+function renderPlayers(){
+  const el=document.getElementById('players-list');
+  if(!state.players.length){ el.innerHTML=`<div class="card empty">Agregá a tus amigos para empezar. 👥</div>`; return; }
+  const t=playerTotals();
+  el.innerHTML=`<div class="card"><ul class="players">`+state.players.map(p=>{
+    const b=t[p.id].balance;
+    const txt=b>0?`+${fmt(b)}`:b<0?fmt(b):'';
+    const cls=b>0?'pos':b<0?'neg':'';
+    return `<li><span class="pname">${esc(p.name)}</span><span class="bal ${cls}">${txt}</span><button class="danger small no-print" data-rm="${p.id}">✕</button></li>`;
+  }).join('')+`</ul></div>`;
+  el.querySelectorAll('[data-rm]').forEach(b=>b.addEventListener('click',()=>removePlayer(b.dataset.rm)));
+}
+
+function renderResumen(){
+  const el=document.getElementById('resumen-table');
+  if(!state.players.length){ el.innerHTML=`<div class="card empty">Sin jugadores todavía.</div>`; return; }
+  const t=playerTotals();
+  const rows=state.players.map(p=>{
+    const x=t[p.id];
+    const bal=x.balance;
+    const cls=bal>0?'pos':bal<0?'neg':'';
+    return `<tr><td>${esc(p.name)}</td><td class="num">${x.cartones}</td><td class="num">${fmt(x.gastado)}</td><td class="num">${fmt(x.ganado)}</td><td class="num ${cls}">${bal>0?'+':''}${fmt(bal)}</td></tr>`;
+  }).join('');
+  const sums=state.players.reduce((a,p)=>{const x=t[p.id];a.c+=x.cartones;a.g+=x.gastado;a.w+=x.ganado;return a;},{c:0,g:0,w:0});
+  el.innerHTML=`<div class="card"><table>
+    <thead><tr><th>Jugador</th><th class="num">Cartones</th><th class="num">Gastado</th><th class="num">Ganado</th><th class="num">Balance</th></tr></thead>
+    <tbody>${rows}</tbody>
+    <tfoot><tr class="total"><td>Total</td><td class="num">${sums.c}</td><td class="num">${fmt(sums.g)}</td><td class="num">${fmt(sums.w)}</td><td class="num">${fmt(sums.w-sums.g)}</td></tr></tfoot>
+  </table></div>`;
+}
+
+function renderPagos(){
+  const el=document.getElementById('pagos-content');
+  if(!state.players.length){ el.innerHTML=`<div class="card empty">Sin jugadores todavía.</div>`; return; }
+  if(!state.jugadas.length){ el.innerHTML=`<div class="card empty">Registrá al menos una jugada para calcular los pagos.</div>`; return; }
+  const t=playerTotals();
+  const transfers=settle();
+  let html=`<div class="card"><h3>💸 Liquidación de la sesión</h3>`;
+  if(!transfers.length){
+    html+=`<p class="ok">✅ Todo en paz. Nadie debe nada.</p>`;
+  }else{
+    html+=`<p class="muted">Con estos pagos liquidás todo <b>de una sola vez</b>, sin pasar plata en cada jugada (en general, una transferencia por persona):</p><ul class="transfers">`;
+    for(const tr of transfers){
+      html+=`<li><span>${esc(pname(tr.from))}</span> <span class="arrow">→ paga a →</span> <span>${esc(pname(tr.to))}</span> <b>${fmt(tr.cents)}</b></li>`;
+    }
+    html+=`</ul><h4>Resumen por persona</h4><ul class="balances">`;
+    for(const p of state.players){
+      const b=t[p.id].balance;
+      if(b<0) html+=`<li><span class="neg">●</span> ${esc(p.name)} <b>debe</b> ${fmt(-b)}</li>`;
+      else if(b>0) html+=`<li><span class="pos">●</span> ${esc(p.name)} <b>recibe</b> ${fmt(b)}</li>`;
+    }
+    html+=`</ul>`;
+  }
+  html+=`</div>`;
+  el.innerHTML=html;
+}
+
+/* ---- acciones ---- */
+function saveJugada(){
+  const rows = document.querySelectorAll('#jugada-form .jug-row');
+  if(!rows.length){ alert('Primero agregá jugadores.'); return; }
+  const buys={}; const line=[]; const bingo=[];
+  rows.forEach(row=>{
+    const pid=row.dataset.pid;
+    const part=row.querySelector('.p-part');
+    if(!part.checked) return;
+    const carts=Math.max(0, parseInt(row.querySelector('.p-carts').value,10)||0);
+    if(carts>0) buys[pid]=carts;
+    if(row.querySelector('.p-line').checked) line.push(pid);
+    if(row.querySelector('.p-bingo').checked) bingo.push(pid);
+  });
+  const validLine = line.filter(id=>buys[id]>0);
+  const validBingo = bingo.filter(id=>buys[id]>0);
+  if(!Object.keys(buys).length){ alert('Al menos un jugador debe comprar cartones.'); return; }
+  if(!validLine.length && !validBingo.length){ alert('Marcá al menos un ganador de Línea o de Bingo.'); return; }
+  if(formState.editingId){
+    const j=state.jugadas.find(x=>x.id===formState.editingId);
+    if(j){ j.linePct=state.linePct; j.buys=buys; j.line=validLine; j.bingo=validBingo; }
+  }else{
+    state.jugadas.unshift({ id:uid(), createdAt:Date.now(), priceCents:state.priceCents, linePct:state.linePct, buys, line:validLine, bingo:validBingo });
+  }
+  formState={open:false,editingId:null};
+  saveState(); renderAll();
+}
+function deleteJugada(id){
+  if(!confirm('¿Eliminar esta jugada? Se recalcularán los totales.')) return;
+  state.jugadas=state.jugadas.filter(j=>j.id!==id);
+  saveState(); renderAll();
+}
+function addPlayer(){
+  const input=document.getElementById('player-name');
+  const name=input.value.trim();
+  if(!name) return;
+  if(state.players.some(p=>p.name.toLowerCase()===name.toLowerCase())){ alert('Ese jugador ya existe.'); return; }
+  state.players.push({id:uid(),name});
+  input.value='';
+  saveState(); renderAll();
+}
+function removePlayer(id){
+  const used=state.jugadas.some(j=>(id in j.buys)||(j.line||[]).includes(id)||(j.bingo||[]).includes(id));
+  if(used){ alert('No se puede eliminar: este jugador ya participó en jugadas. Podés borrar todo desde Configuración.'); return; }
+  if(!confirm(`¿Eliminar a ${pname(id)}?`)) return;
+  state.players=state.players.filter(p=>p.id!==id);
+  saveState(); renderAll();
+}
+function resetSession(){
+  if(!confirm('¿Empezar una sesión nueva? Se borrarán todos los jugadores y jugadas.')) return;
+  state=defaultState();
+  formState={open:false,editingId:null};
+  saveState(); closeModal(); renderAll(); switchTab('jugadas');
+}
+function switchTab(name){
+  document.body.dataset.tab=name;
+  document.querySelectorAll('.tab').forEach(s=>s.classList.toggle('active', s.id==='tab-'+name));
+  document.querySelectorAll('.tab-btn').forEach(b=>b.classList.toggle('active', b.dataset.tab===name));
+}
+function openModal(){
+  document.getElementById('set-currency').value=state.currency;
+  document.getElementById('set-price').value=(state.priceCents/100);
+  document.getElementById('set-linepct').value=state.linePct;
+  document.getElementById('modal').classList.remove('hidden');
+}
+function closeModal(){ document.getElementById('modal').classList.add('hidden'); }
+function saveSettings(){
+  const cur=document.getElementById('set-currency').value.trim();
+  const price=toCents(document.getElementById('set-price').value);
+  const pct=Math.max(0,Math.min(100, parseInt(document.getElementById('set-linepct').value,10)||0));
+  if(price<=0){ alert('El precio del cartón debe ser mayor a 0.'); return; }
+  state.currency=cur||'$';
+  state.priceCents=price;
+  state.linePct=pct;
+  saveState(); closeModal(); renderAll();
+}
+
+/* ---- init ---- */
+function init(){
+  document.getElementById('btn-new-jugada').addEventListener('click', ()=>{
+    formState={open:true,editingId:null}; renderJugadas(); window.scrollTo({top:0,behavior:'smooth'});
+  });
+  document.getElementById('btn-add-player').addEventListener('click', addPlayer);
+  document.getElementById('player-name').addEventListener('keydown', e=>{ if(e.key==='Enter') addPlayer(); });
+  document.getElementById('btn-settings').addEventListener('click', openModal);
+  document.getElementById('btn-modal-close').addEventListener('click', closeModal);
+  document.getElementById('btn-save-settings').addEventListener('click', saveSettings);
+  document.getElementById('btn-reset').addEventListener('click', resetSession);
+  document.getElementById('btn-print').addEventListener('click', ()=>window.print());
+  document.querySelectorAll('.tab-btn').forEach(b=>b.addEventListener('click', ()=>switchTab(b.dataset.tab)));
+  document.getElementById('modal').addEventListener('click', e=>{ if(e.target===document.getElementById('modal')) closeModal(); });
+  renderAll();
+}
+document.addEventListener('DOMContentLoaded', init);
+</script>
+</body>
+</html>
